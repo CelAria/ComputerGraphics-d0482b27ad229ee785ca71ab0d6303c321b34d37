@@ -24,9 +24,21 @@ const GLuint windowWidth = 800, windowHeight = 800;
 
 glm::vec3 triangle_scale;
 glm::vec3 camera_translation = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 camera_position = glm::vec3(0, 0, 5);
+glm::vec3 camera_direction = glm::vec3(0, 0, -1);
+glm::vec3 camera_up = glm::vec3(0, 1, 0);
+glm::mat4 view_matrix;
+glm::mat4 projection_matrix;
 
 const float TRIANGLE_MOVEMENT_STEP = 0.1f;
 const float CAMERA_PAN_STEP = 0.2f;
+
+void update_camera() {
+	view_matrix = glm::lookAt(camera_position, //camera positioned here
+		camera_position + camera_direction, //looks at origin
+		camera_up); //up vector
+
+}
 
 // Is called whenever a key is pressed/released via GLFW
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -35,6 +47,24 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
+	if (key == GLFW_KEY_LEFT)
+		camera_position += 0.1f* glm::cross(camera_direction, camera_up);
+	if (key == GLFW_KEY_RIGHT)
+		camera_position -= 0.1f*glm::cross(camera_direction, camera_up);
+
+	if (key == GLFW_KEY_J)
+		camera_direction += 0.1f*glm::cross(camera_direction, camera_up);
+	if (key == GLFW_KEY_K)
+		camera_direction -= 0.1f*glm::cross(camera_direction, camera_up);
+
+	//if (key == GLFW_KEY_UP)
+		//camera_position= 
+
+	//if (key == GLFW_KEY_DOWN)
+
+
+	camera_direction = glm::normalize(camera_direction);
+	update_camera();
 }
 
 
@@ -76,6 +106,8 @@ int main()
 	glfwGetFramebufferSize(window, &width, &height);
 
 	glViewport(0, 0, width, height);
+	update_camera();
+	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
 
 
 	// Build and compile our shader program
@@ -253,7 +285,10 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, (numvertices*3)*sizeof(GLfloat), vertices, GL_STATIC_DRAW); // multiply by the size of GL float (4 bits) because Specifies the size in bytes of the buffer object's new data store.
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	//TRY
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
@@ -268,10 +303,11 @@ int main()
 	//free image memory
 	stbi_image_free(data);
 
-
+	int i = 0;
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
+
 		// Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
 		glfwPollEvents();
 
@@ -280,17 +316,16 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glm::mat4 model_matrix;
-		model_matrix = glm::scale(model_matrix, triangle_scale);
-		//model_matrix = glm::rotate(model_matrix, glm::mesh_rotation(1.0f, 0.0f, 0.0f));
-
-		glm::mat4 view_matrix;
-		view_matrix = glm::lookAt(glm::vec3(0.0f, -10.0f, 3.0f), //camera positioned here CAMERA is 5 units back
-			glm::vec3(0.0f, 0.0f, 0.0f), //looks at origin
-			glm::vec3(0.0f, 1.0f, 0.0f)); //up vector
-
 		glm::mat4 projection_matrix;
 		projection_matrix = glm::perspectiveFov(45.0f, (GLfloat)windowWidth, (GLfloat)windowHeight, 0.0f, 100.0f);
+
+
+		glm::mat4 model_matrix;
+		glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0), glm::vec3(-0.5, -0.5, 0));
+		glm::mat4 translation_matrix_2 = glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0));
+		glm::mat4 scale_matrix = glm::scale(glm::mat4(1.0), glm::vec3(0.01, 0.01, 0.01));
+		model_matrix = scale_matrix * translation_matrix * view_matrix;
+	
 
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model_matrix)); //broadcast the uniform value to the shaders
 		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
@@ -304,7 +339,7 @@ int main()
 
 		};
 
-		// Swap the screen buffers
+		// Swap the screen buffers (double buffering suppport) 
 		glfwSwapBuffers(window);
 	}
 
