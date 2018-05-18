@@ -27,6 +27,7 @@ glm::vec3 camera_translation = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 camera_position = glm::vec3(0, 0, 5);
 glm::vec3 camera_direction = glm::vec3(0, 0, -1);
 glm::vec3 camera_up = glm::vec3(0, 1, 0);
+glm::vec3 camera_down= glm:: vec3(0, -1, 0);
 glm::mat4 view_matrix;
 glm::mat4 projection_matrix;
 
@@ -52,15 +53,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_RIGHT)
 		camera_position -= 0.1f*glm::cross(camera_direction, camera_up);
 
+	if (key == GLFW_KEY_UP)
+		camera_position -= 0.1f*(camera_up);
+
+	if (key == GLFW_KEY_DOWN)
+		camera_position += 0.1f*(camera_up);
+
 	if (key == GLFW_KEY_J)
 		camera_direction += 0.1f*glm::cross(camera_direction, camera_up);
 	if (key == GLFW_KEY_K)
 		camera_direction -= 0.1f*glm::cross(camera_direction, camera_up);
 
-	//if (key == GLFW_KEY_UP)
-		//camera_position= 
-
-	//if (key == GLFW_KEY_DOWN)
 
 
 	camera_direction = glm::normalize(camera_direction);
@@ -239,10 +242,10 @@ int main()
 			int heightmapvalue= data[(width*i)+j];  // get each individual colour value 
 			
 			float v[] = {
-				data[(width*i) + j]/255.0,
-				data[((width*i) + j) + 1]/255.0,
-				data[((width*(i + 1)) + j)]/255.0, // add 1 to i 
-				data[((width*(i + 1)) + j) + 1]/255
+				data[(width*i) + j],
+				data[((width*i) + j) + 1],
+				data[((width*(i + 1)) + j)], // add 1 to i 
+				data[((width*(i + 1)) + j) + 1]
 			};
 
 			float x = i - (0.5*width); // centers in window
@@ -261,7 +264,7 @@ int main()
 
 			};
 
-			//float z = (heightmapvalue / 255.0); // make a floating point between 0 and 1
+			float z = (heightmapvalue / 255.0); // make a floating point between 0 and 1
 			for (int k = 0; k < sizeof(pixelvertices) / sizeof(GLfloat); k++)
 			{
 
@@ -277,7 +280,6 @@ int main()
 	GLuint VAO, VBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	//glGenBuffers(2, &VBO);
 
 	// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
 	glBindVertexArray(VAO);
@@ -286,8 +288,8 @@ int main()
 	glBufferData(GL_ARRAY_BUFFER, (numvertices*3)*sizeof(GLfloat), vertices, GL_STATIC_DRAW); // multiply by the size of GL float (4 bits) because Specifies the size in bytes of the buffer object's new data store.
 
 	//TRY
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glEnableVertexAttribArray(0);
 
@@ -323,7 +325,7 @@ int main()
 		glm::mat4 model_matrix;
 		glm::mat4 translation_matrix = glm::translate(glm::mat4(1.0), glm::vec3(-0.5, -0.5, 0));
 		glm::mat4 translation_matrix_2 = glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0));
-		glm::mat4 scale_matrix = glm::scale(glm::mat4(1.0), glm::vec3(0.01, 0.01, 0.01));
+		glm::mat4 scale_matrix = glm::scale(glm::mat4(1.0), glm::vec3(0.005, 0.005, 0.005));
 		model_matrix = scale_matrix * translation_matrix * view_matrix;
 	
 
