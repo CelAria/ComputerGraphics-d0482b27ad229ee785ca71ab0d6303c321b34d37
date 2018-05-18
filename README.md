@@ -12,4 +12,4 @@ Mesh is created from two triangles of vertexes forming a square
 
 Windows size 800x800, double buffering support
 
-Keyboard functionality: left arrow to move left, right arrow to move right, J to pan camera left, K to pan camera right
+Keyboard functionality: up arrow for up, down arrow for down, left arrow to move left, right arrow to move right, J to pan camera left, K to pan camera right
